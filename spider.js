@@ -5,14 +5,11 @@ var http = require('http');
 var fs = require('fs');
 var cheerio = require('cheerio');
 var request = require('request');
-
 var id = 224;
-var url = "http://dianxin.xupt.edu.cn/index.php/Index/Lv3_Detail/lv3ID/225";
-
+var url = "http://dianxin.xupt.edu.cn/index.php/Index/Lv3_Detail/lv3ID/224";
 function fetchPage(x){
     startRequest(x);
 }
-
 function startRequest(x) {
     http.get(x, function (res) {
         var html = '';
@@ -27,7 +24,7 @@ function startRequest(x) {
             var news_item = {
                 title: $('table div:nth-child(1)').text().trim(),
                 Time: time,
-                link: "http://dianxin.xupt.edu.cn/index.php/Index/Lv3_Detail/lv3ID" + 'id',
+                link: "http://dianxin.xupt.edu.cn/index.php/Index/Lv3_Detail/lv3ID/" + id,
                 id: id + 1
             };
             console.log(news_item);
@@ -35,7 +32,7 @@ function startRequest(x) {
             savedContent($, news_title);
             savedImg($, news_title);
             //    下一篇文章的标题
-            var nextLink = 'http://dianxin.xupt.edu.cn/index.php/Index/Lv3_Detail/lv3ID/' + 'id';
+            var nextLink = 'http://dianxin.xupt.edu.cn/index.php/Index/Lv3_Detail/lv3ID/' + id;
             id++;
             var str = encodeURI(nextLink);
             if (id - 224 <=200) {
@@ -58,23 +55,12 @@ function savedContent($,news_title){
                 if (err) {
                     console.log(err);
                 }
+            }).on('error',function(err){
+                console.log(err);
             });
         }
     });
-    //针对不同的版式
-    //$('div').each(function(index,item) {
-    //    var x = $(this).text;
-    //    var y = s.substring(0, 2).trim();
-    //    if (y == '') {
-    //        x += '\n';
-    //        //将新闻文本内容一段一段添加到/data文件夹下，并用新闻的标题来命名文件
-    //        fs.appendFile('./data/' + news_title + '.txt', 'utf-8', function (err) {
-    //            if (err) {
-    //                console.log(err);
-    //            }
-    //        });
-    //    }
-    //});
+
 }
 //该函数的作用：在本地存储所爬取到的图片资源
 function savedImg($,news_title){
@@ -83,18 +69,17 @@ function savedImg($,news_title){
         if(img_title.length>35||img_title==""){
             img_title="Null";}
         var img_filename = img_title + '.jpg';
-
         var img_src = 'http://dianxin.xupt.edu.cn' + $(this).attr('src'); //获取图片的url
-
         //采用request模块，向服务器发起一次请求，获取图片资源
         request.head(img_src,function(err,res,body){
             if(err){
                 console.log(err);
             }
+        }).on('error',function(error){
+            console.log(error);
         });
-        request(img_src).pipe(fs.createWriteStream('./image/'+news_title + '---' + img_filename));     //通过流的方式，把图片写到本地/image目录下，并用新闻的标题和图片的标题作为图片的名称。
+        //request(img_src).pipe(fs.createWriteStream('./image/'+news_title + '---' + "bmbk"));     //通过流的方式，把图片写到本地/image目录下，并用新闻的标题和图片的标题作为图片的名称。
     })
 
 }
-
 fetchPage(url);
